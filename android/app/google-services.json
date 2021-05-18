@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "255295692128",
+    "project_id": "agenda-de-contatos-b18d3",
+    "storage_bucket": "agenda-de-contatos-b18d3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:255295692128:android:7a1ee4a214839afba51205",
+        "android_client_info": {
+          "package_name": "pucminas.br.agenda_de_contatos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "255295692128-cvumjq4q8bsvaa2596cm98drr287vmec.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBjta-KQYit36GJdMou_G263dKusEmMyLQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "255295692128-cvumjq4q8bsvaa2596cm98drr287vmec.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

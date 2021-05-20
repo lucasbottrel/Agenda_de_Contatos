@@ -5,8 +5,11 @@ class Home extends StatelessWidget {
   static String tag = '/home';
   @override
   Widget build(BuildContext context) {
-    var tituloController = TextEditingController();
-    var descricaoController = TextEditingController();
+    var nomeController = TextEditingController();
+    var telefoneController = TextEditingController();
+    var emailController = TextEditingController();
+    var enderecoController = TextEditingController();
+    var CEPController = TextEditingController();
     FirebaseFirestore db = FirebaseFirestore.instance;
     var snap = db.collection("contatos").
     where('excluido', isEqualTo: false).
@@ -27,7 +30,7 @@ class Home extends StatelessWidget {
                 var item = snapshot.data.docs[i];
                 return ListTile(
                   title: Text(item['nome']),
-                  subtitle: Text(item['telefone']),
+                  subtitle: Text(item['telefone'])
                 );
               },
           );
@@ -40,31 +43,75 @@ class Home extends StatelessWidget {
               builder: (context){
                 return AlertDialog(
                   content: Form(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      child: ListView(
+                        //mainAxisAlignment: MainAxisAlignment.start,
+                        //crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text("Nome"),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              hintText: "digite o nome",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
+                              controller: nomeController,
                             ),
-                            controller: tituloController,
                           ),
-                          SizedBox(height: 20,),
+                          SizedBox(height: 10,),
                           Text("Telefone"),
-                          TextFormField(
-                            decoration: InputDecoration(
-                              hintText: "digite o telefone",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(15),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
                               ),
+                              controller: telefoneController,
                             ),
-                            controller: descricaoController,
                           ),
+                          SizedBox(height: 10,),
+                          Text("E-mail"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              controller: emailController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          Text("Endereço"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              controller: enderecoController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          Text("CEP"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                              ),
+                              controller: CEPController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
                         ],
                       )
                   ),
@@ -77,8 +124,11 @@ class Home extends StatelessWidget {
                     TextButton(
                         onPressed: () async {
                           await db.collection("contatos").
-                          add({'nome': tituloController.text,
-                            'telefone': descricaoController.text,
+                          add({'nome': nomeController.text,
+                            'telefone': telefoneController.text,
+                            'email':emailController.text,
+                            'endereço':enderecoController.text,
+                            'CEP':CEPController.text,
                             'concluido': false,
                             'excluido': false} );
                           Navigator.of(context).pop();

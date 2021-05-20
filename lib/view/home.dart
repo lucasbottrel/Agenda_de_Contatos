@@ -8,12 +8,12 @@ class Home extends StatelessWidget {
     var tituloController = TextEditingController();
     var descricaoController = TextEditingController();
     FirebaseFirestore db = FirebaseFirestore.instance;
-    var snap = db.collection("tarefa").
+    var snap = db.collection("contatos").
     where('excluido', isEqualTo: false).
     snapshots();
     return Scaffold(
       appBar: AppBar(
-        title: Text("CRUD Firebase"),
+        title: Text("AGENDA DE CONTATOS"),
       ),
       body: StreamBuilder(
         stream: snap,
@@ -26,8 +26,8 @@ class Home extends StatelessWidget {
               itemBuilder: (context, i){
                 var item = snapshot.data.docs[i];
                 return ListTile(
-                  title: Text(item['titulo']),
-                  subtitle: Text(item['descricao']),
+                  title: Text(item['nome']),
+                  subtitle: Text(item['telefone']),
                 );
               },
           );
@@ -44,10 +44,10 @@ class Home extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.start,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          Text("Título"),
+                          Text("Nome"),
                           TextFormField(
                             decoration: InputDecoration(
-                              hintText: "digite o título",
+                              hintText: "digite o nome",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
@@ -55,10 +55,10 @@ class Home extends StatelessWidget {
                             controller: tituloController,
                           ),
                           SizedBox(height: 20,),
-                          Text("Descrição"),
+                          Text("Telefone"),
                           TextFormField(
                             decoration: InputDecoration(
-                              hintText: "digite a descrição",
+                              hintText: "digite o telefone",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(15),
                               ),
@@ -76,9 +76,9 @@ class Home extends StatelessWidget {
                     ),
                     TextButton(
                         onPressed: () async {
-                          await db.collection("tarefa").
-                          add({'titulo': tituloController.text,
-                            'descricao': descricaoController.text,
+                          await db.collection("contatos").
+                          add({'nome': tituloController.text,
+                            'telefone': descricaoController.text,
                             'concluido': false,
                             'excluido': false} );
                           Navigator.of(context).pop();

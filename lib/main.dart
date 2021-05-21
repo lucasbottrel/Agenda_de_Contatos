@@ -1,3 +1,5 @@
+import 'package:agenda_de_contatos/view/login.dart';
+import 'package:agenda_de_contatos/view/signUp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:agenda_de_contatos/view/home.dart';
@@ -17,9 +19,11 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: Home.tag,
+      initialRoute: login.tag,
       routes: {
         Home.tag: (context) => Home(),
+        login.tag: (context) => login(),
+        signUp.tag: (context) => signUp()
       },  // routes
     );
   }  // build

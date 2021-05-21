@@ -6,14 +6,12 @@ import 'package:flutter/material.dart';
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  //FirebaseFirestore.instance.collection("tarefa").doc("2").set({"titulo": "fazer comida", "descricao": " todos os dias", "concluido": "false", "excluido":"false"});
   runApp(MyApp());
-}
+}  // main
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    //_buscaDados();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -21,8 +19,8 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: Home.tag,
       routes: {
-        Home.tag: (context) => Home()
-      },
+        Home.tag: (context) => Home(),
+      },  // routes
     );
-  }
-}
+  }  // build
+}  // MyApp

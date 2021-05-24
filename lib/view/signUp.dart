@@ -92,8 +92,6 @@ class _signUpState extends State<signUp> {
                         ),
                       );
                     }
-                    print("Login "+_controllerLogin.text);
-                    print("Senha "+_controllerSenha.text);
                   }
               ),
             ),

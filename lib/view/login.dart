@@ -84,8 +84,6 @@ class _loginState extends State<login> {
                     else{
                       _validarUsuario(_controllerLogin.text, _controllerSenha.text, context);
                     }
-                    print("Login "+_controllerLogin.text);
-                    print("Senha "+_controllerSenha.text);
                   }
               ),
             ),
@@ -111,8 +109,6 @@ class _loginState extends State<login> {
                         ),
                       );
                     }
-                    print("Login "+_controllerLogin.text);
-                    print("Senha "+_controllerSenha.text);
                   }
               ),
             ),

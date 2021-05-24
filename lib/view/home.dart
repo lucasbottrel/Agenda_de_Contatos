@@ -58,8 +58,6 @@ class _HomeState extends State<Home> {
                                 return AlertDialog(
                                   content: Form(
                                       child: ListView(
-                                        //mainAxisAlignment: MainAxisAlignment.start,
-                                        //crossAxisAlignment: CrossAxisAlignment.start,
                                         children: <Widget>[
                                           Text("Nome"),
                                           Container(
@@ -170,8 +168,6 @@ class _HomeState extends State<Home> {
                   return AlertDialog(
                     content: Form(
                         child: ListView(
-                          //mainAxisAlignment: MainAxisAlignment.start,
-                          //crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text("Nome"),
                             Container(

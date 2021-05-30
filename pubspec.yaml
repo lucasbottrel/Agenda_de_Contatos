@@ -22,6 +22,7 @@ environment:
 
 dependencies:
   firebase_storage: ^8.0.5 #armazenar arquivos, imagens
+  http: ^0.13.3 #busca cep
   firebase_auth: ^1.1.2 #autenticação
   cloud_firestore: ^2.2.0 #banco de dados
   firebase_core: ^1.1.0 #recursos basicos

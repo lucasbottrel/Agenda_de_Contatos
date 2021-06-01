@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +51,8 @@ class _HomeState extends State<Home> {
     aniversarioController.text="";
   }
 
-  _recuperaValores(String nome, String telefone, String email, String logradouro, String complemento, String bairro, String localidade, String CEP){
+  _recuperaValores(String nome, String telefone, String email, String logradouro, String complemento, String bairro, String localidade, String CEP, String aniversario){
+    //print(aniversario);
     nomeController.text = nome;
     telefoneController.text = telefone;
     emailController.text = email;
@@ -61,6 +61,7 @@ class _HomeState extends State<Home> {
     bairroController.text = bairro;
     localidadeController.text = localidade;
     CEPController.text = CEP;
+    aniversarioController.text = aniversario;
   }
 
   Future getImage() async {
@@ -123,7 +124,7 @@ class _HomeState extends State<Home> {
                         item['bairro'],
                         item['localidade'],
                         item['CEP'],
-                        //item['DataDeNascimento']
+                        item['aniversario']
                       );
                       showDialog(
                           context: context,
@@ -298,7 +299,7 @@ class _HomeState extends State<Home> {
                                         'bairro': bairroController.text,
                                         'localidade': localidadeController.text,
                                         'CEP': CEPController.text,
-                                        'DataDeNascimento': aniversarioController.text,
+                                        'aniversario': aniversarioController.text,
                                         });
                                       Navigator.of(context).pop();
                                     },
@@ -486,7 +487,7 @@ class _HomeState extends State<Home> {
                             'bairro':bairroController.text,
                             'localidade':localidadeController.text,
                             'CEP': CEPController.text,
-                            'DataDeAniversario': aniversarioController.text
+                            'aniversario': aniversarioController.text
                             });
                           Navigator.of(context).pop();
                           _limparControllers();

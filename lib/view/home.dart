@@ -1,8 +1,12 @@
+
+import 'dart:io';
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:image_picker/image_picker.dart';
 
 class Home extends StatefulWidget {
   static String tag = '/home';
@@ -14,8 +18,15 @@ class _HomeState extends State<Home> {
   var nomeController = TextEditingController();
   var telefoneController = TextEditingController();
   var emailController = TextEditingController();
-  var enderecoController = TextEditingController();
+  var logradouroController = TextEditingController();
+  var complementoController = TextEditingController();
+  var bairroController = TextEditingController();
+  var localidadeController = TextEditingController();
   var CEPController = TextEditingController();
+  var aniversarioController = TextEditingController();
+  File _image;
+  final picker = ImagePicker();
+  DateTime _dateTime;
 
   _recuperaCep() async {
     String cepDigitado = CEPController.text;
@@ -23,23 +34,51 @@ class _HomeState extends State<Home> {
     http.Response response;
     response = await http.get(uri);
     Map<String, dynamic> retorno = json.decode(response.body);
-    String logradouro = retorno["logradouro"];
-    String complemento = retorno["complemento"];
-    String bairro = retorno["bairro"];
-    String localidade = retorno["localidade"];
-    setState(() { //configurar o _resultado
-      enderecoController.text = logradouro + "  " + bairro + "  " + localidade;
+    logradouroController.text = retorno["logradouro"];
+    complementoController.text = retorno["complemento"];
+    bairroController.text = retorno["bairro"];
+    localidadeController.text = retorno["localidade"];
+  }
+
+  _limparControllers(){
+    nomeController.text = "";
+    telefoneController.text = "";
+    emailController.text = "";
+    logradouroController.text = "";
+    complementoController.text = "";
+    bairroController.text = "";
+    localidadeController.text = "";
+    CEPController.text = "";
+    aniversarioController.text="";
+  }
+
+  _recuperaValores(String nome, String telefone, String email, String logradouro, String complemento, String bairro, String localidade, String CEP){
+    nomeController.text = nome;
+    telefoneController.text = telefone;
+    emailController.text = email;
+    logradouroController.text = logradouro;
+    complementoController.text = complemento;
+    bairroController.text = bairro;
+    localidadeController.text = localidade;
+    CEPController.text = CEP;
+  }
+
+  Future getImage() async {
+    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _image = File(pickedFile.path);
+      } else {
+        print('No image selected.');
+      }
     });
-    print("Logradouro: ${logradouro} "
-        " complemento: ${complemento}"
-        " bairro: ${bairro}"
-        " localidade: ${localidade}");
   }
 
   @override
   Widget build(BuildContext context) {
     FirebaseFirestore db = FirebaseFirestore.instance;
-    var snap = db.collection("contatos").where('excluido', isEqualTo: false).snapshots();
+    var snap = db.collection("contatos").snapshots();
 
     return Scaffold(
       appBar: AppBar(
@@ -47,8 +86,7 @@ class _HomeState extends State<Home> {
       ),
       body: StreamBuilder(
         stream: snap,
-        builder: (BuildContext context,
-            AsyncSnapshot<QuerySnapshot> snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
           return ListView.builder(
             itemCount: snapshot.data.docs.length,
             itemBuilder: (context, i) {
@@ -69,10 +107,24 @@ class _HomeState extends State<Home> {
                 child: ListTile(
                   title: Text(item['nome']),
                   subtitle: Text(item['telefone']),
+                  leading: CircleAvatar(
+                  foregroundImage: AssetImage('assets/profile.jpg'),
+                  ),
                   trailing: TextButton.icon(
                     icon: Icon(Icons.edit, size: 18),
                     label: Text(''),
                     onPressed: () {
+                      _recuperaValores(
+                        item['nome'],
+                        item['telefone'],
+                        item['email'],
+                        item['logradouro'],
+                        item['complemento'],
+                        item['bairro'],
+                        item['localidade'],
+                        item['CEP'],
+                        //item['DataDeNascimento']
+                      );
                       showDialog(
                           context: context,
                           builder: (context) {
@@ -80,6 +132,7 @@ class _HomeState extends State<Home> {
                               content: Form(
                                   child: ListView(
                                     children: <Widget>[
+                                      Image.asset('assets/profile.jpg', height: 100, width: 100),
                                       Text("Nome"),
                                       Container(
                                         height: 30,
@@ -122,7 +175,7 @@ class _HomeState extends State<Home> {
                                         ),
                                       ),
                                       SizedBox(height: 10,),
-                                      Text("Endereço"),
+                                      Text("Data de Nascimento"),
                                       Container(
                                         height: 30,
                                         child: TextFormField(
@@ -132,8 +185,19 @@ class _HomeState extends State<Home> {
                                                   .circular(15),
                                             ),
                                           ),
-                                          controller: enderecoController,
-                                        ),
+                                          controller: aniversarioController,
+                                          onTap: () {
+                                            showDatePicker(
+                                                context: context,
+                                                initialDate: DateTime.now(),
+                                                firstDate: DateTime(1900),
+                                                lastDate: DateTime(2222)
+                                            ).then((date) {
+                                              setState(() {
+                                                  aniversarioController.text = DateFormat('dd/MM/yyyy').format(date);
+                                              });
+                                            });
+                                          }),
                                       ),
                                       SizedBox(height: 10,),
                                       Text("CEP"),
@@ -150,8 +214,69 @@ class _HomeState extends State<Home> {
                                           controller: CEPController,
                                         ),
                                       ),
+                                      TextButton(
+                                        onPressed: _recuperaCep,
+                                        child: Text("CONSULTAR"),
+                                      ),
+                                      SizedBox(height: 10,),
+                                      Text("Logradouro"),
+                                      Container(
+                                        height: 30,
+                                        child: TextFormField(
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(15),
+                                            ),
+                                          ),
+                                          controller: logradouroController,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10,),
+                                      Text("Complemento"),
+                                      Container(
+                                        height: 30,
+                                        child: TextFormField(
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(15),
+                                            ),
+                                          ),
+                                          controller: complementoController,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10,),
+                                      Text("Bairro"),
+                                      Container(
+                                        height: 30,
+                                        child: TextFormField(
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(15),
+                                            ),
+                                          ),
+                                          controller: bairroController,
+                                        ),
+                                      ),
+                                      SizedBox(height: 10,),
+                                      Text("Localidade"),
+                                      Container(
+                                        height: 30,
+                                        child: TextFormField(
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius
+                                                  .circular(15),
+                                            ),
+                                          ),
+                                          controller: localidadeController,
+                                        ),
+                                      ),
                                       SizedBox(height: 10,),
                                     ],
+
                                   )
                               ),
                               actions: <Widget>[
@@ -168,10 +293,13 @@ class _HomeState extends State<Home> {
                                         ({'nome': nomeController.text,
                                         'telefone': telefoneController.text,
                                         'email': emailController.text,
-                                        'endereço': enderecoController.text,
+                                        'logradouro': logradouroController.text,
+                                        'complemento': complementoController.text,
+                                        'bairro': bairroController.text,
+                                        'localidade': localidadeController.text,
                                         'CEP': CEPController.text,
-                                        'concluido': false,
-                                        'excluido': false});
+                                        'DataDeNascimento': aniversarioController.text,
+                                        });
                                       Navigator.of(context).pop();
                                     },
                                     child: Text("Salvar"
@@ -191,6 +319,7 @@ class _HomeState extends State<Home> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
+          _limparControllers();
           showDialog(
               context: context,
               builder: (context) {
@@ -198,6 +327,7 @@ class _HomeState extends State<Home> {
                   content: Form(
                       child: ListView(
                         children: <Widget>[
+                          Image.asset('assets/profile.jpg', height: 100, width: 100),
                           Text("Nome"),
                           Container(
                             height: 30,
@@ -237,6 +367,31 @@ class _HomeState extends State<Home> {
                             ),
                           ),
                           SizedBox(height: 10,),
+                          Text("Data de Nascimento"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius
+                                        .circular(15),
+                                  ),
+                                ),
+                                controller: aniversarioController,
+                                onTap: () {
+                                  showDatePicker(
+                                      context: context,
+                                      initialDate: DateTime.now(),
+                                      firstDate: DateTime(1900),
+                                      lastDate: DateTime(2222)
+                                  ).then((date) {
+                                    setState(() {
+                                      aniversarioController.text = DateFormat('dd/MM/yyyy').format(date);
+                                    });
+                                  });
+                                }),
+                          ),
+                          SizedBox(height: 10,),
                           Text("CEP"),
                           Container(
                             height: 30,
@@ -254,22 +409,67 @@ class _HomeState extends State<Home> {
                             onPressed: _recuperaCep,
                             child: Text("CONSULTAR"),
                           ),
-                          Text("Endereço"),
+                          SizedBox(height: 10,),
+                          Text("Logradouro"),
                           Container(
                             height: 30,
                             child: TextFormField(
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(15),
+                                  borderRadius: BorderRadius
+                                      .circular(15),
                                 ),
                               ),
-                              controller: enderecoController,
+                              controller: logradouroController,
                             ),
                           ),
-                        ],
-                      )
-                  ),
-                  actions: <Widget>[
+                          SizedBox(height: 10,),
+                          Text("Complemento"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius
+                                      .circular(15),
+                                ),
+                              ),
+                              controller: complementoController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          Text("Bairro"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius
+                                      .circular(15),
+                                ),
+                              ),
+                              controller: bairroController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          Text("Localidade"),
+                          Container(
+                            height: 30,
+                            child: TextFormField(
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius
+                                      .circular(15),
+                                ),
+                              ),
+                              controller: localidadeController,
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          ],
+                        )
+                    ),
+                    actions: <Widget>[
                     TextButton(
                         onPressed: () => Navigator.of(context).pop(),
                         child: Text("Cancelar"
@@ -281,11 +481,15 @@ class _HomeState extends State<Home> {
                           add({'nome': nomeController.text,
                             'telefone': telefoneController.text,
                             'email': emailController.text,
-                            'endereço': enderecoController.text,
+                            'logradouro': logradouroController.text,
+                            'complemento':complementoController.text,
+                            'bairro':bairroController.text,
+                            'localidade':localidadeController.text,
                             'CEP': CEPController.text,
-                            'concluido': false,
-                            'excluido': false});
+                            'DataDeAniversario': aniversarioController.text
+                            });
                           Navigator.of(context).pop();
+                          _limparControllers();
                         },
                         child: Text("Salvar"
                         )

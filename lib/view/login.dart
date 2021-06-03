@@ -27,9 +27,7 @@ class _loginState extends State<login> {
           ),
         );
       }
-    } catch(e){
-
-    }
+    } catch(e){}
   }
 
   @override

@@ -1,11 +1,13 @@
 import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/services.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:image_picker/image_picker.dart';
+import 'package:file_picker/file_picker.dart';
 
 class Home extends StatefulWidget {
   static String tag = '/home';
@@ -23,8 +25,6 @@ class _HomeState extends State<Home> {
   var localidadeController = TextEditingController();
   var CEPController = TextEditingController();
   var aniversarioController = TextEditingController();
-  File _image;
-  final picker = ImagePicker();
   DateTime _dateTime;
 
   _recuperaCep() async {
@@ -64,21 +64,67 @@ class _HomeState extends State<Home> {
     aniversarioController.text = aniversario;
   }
 
-  Future getImage() async {
-    final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  FirebaseFirestore db = FirebaseFirestore.instance;
+  FirebaseStorage _firebaseStorage = FirebaseStorage.instance;
 
-    setState(() {
-      if (pickedFile != null) {
-        _image = File(pickedFile.path);
-      } else {
-        print('No image selected.');
+  List<UploadTask> uploadedTasks = List();
+  List<File> selectedFiles = List();
+  String imagem='assets/profile.jpg';
+
+  uploadFileToStorage(File file) {
+    UploadTask task = _firebaseStorage
+        .ref()
+        .child("images/${DateTime.now().toString()}")
+        .putFile(file);
+    return task;
+  }
+
+  writeImageUrlToFireStore(imageUrl) {
+    db.collection("images").add({"url": imageUrl}).whenComplete(
+            () => print("$imageUrl is saved in Firestore"));
+  }
+
+  saveImageUrlToFirebase(UploadTask task) {
+    task.snapshotEvents.listen((snapShot) {
+      if (snapShot.state == TaskState.success) {
+        snapShot.ref
+            .getDownloadURL()
+            .then((imageUrl) => writeImageUrlToFireStore(imageUrl));
       }
     });
   }
 
+  Future<String> selectFileToUpload() async {
+    try {
+      FilePickerResult result = await FilePicker.platform
+          .pickFiles(allowMultiple: true, type: FileType.image);
+
+      if (result != null) {
+        selectedFiles.clear();
+
+        result.files.forEach((selectedFile) {
+          File file = File(selectedFile.path);
+          selectedFiles.add(file);
+        });
+
+        selectedFiles.forEach((file) {
+          final UploadTask task = uploadFileToStorage(file);
+          saveImageUrlToFirebase(task);
+
+          setState(() {
+            uploadedTasks.add(task);
+          });
+        });
+      } else {
+        print("User has cancelled the selection");
+      }
+    } catch (e) {
+      print(e);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    FirebaseFirestore db = FirebaseFirestore.instance;
     var snap = db.collection("contatos").snapshots();
 
     return Scaffold(
@@ -109,7 +155,7 @@ class _HomeState extends State<Home> {
                   title: Text(item['nome']),
                   subtitle: Text(item['telefone']),
                   leading: CircleAvatar(
-                  foregroundImage: AssetImage('assets/profile.jpg'),
+                  foregroundImage: AssetImage(imagem),
                   ),
                   trailing: TextButton.icon(
                     icon: Icon(Icons.edit, size: 18),
@@ -133,7 +179,12 @@ class _HomeState extends State<Home> {
                               content: Form(
                                   child: ListView(
                                     children: <Widget>[
-                                      Image.asset('assets/profile.jpg', height: 100, width: 100),
+                                      Image.asset(imagem, height: 100, width: 100,),
+                                      TextButton(
+                                          onPressed: () {
+                                            selectFileToUpload();
+                                          },
+                                          child: Text("upload image", style: TextStyle(fontSize: 10))),
                                       Text("Nome"),
                                       Container(
                                         height: 30,
@@ -289,8 +340,7 @@ class _HomeState extends State<Home> {
                                 ),
                                 TextButton(
                                     onPressed: () async {
-                                      await db.collection("contatos").doc(
-                                          item.id).update
+                                      await db.collection("contatos").doc(item.id).update
                                         ({'nome': nomeController.text,
                                         'telefone': telefoneController.text,
                                         'email': emailController.text,
@@ -328,7 +378,12 @@ class _HomeState extends State<Home> {
                   content: Form(
                       child: ListView(
                         children: <Widget>[
-                          Image.asset('assets/profile.jpg', height: 100, width: 100),
+                          Image.asset(imagem, height: 100, width: 100),
+                          TextButton(
+                              onPressed: () {
+                                selectFileToUpload();
+                              },
+                              child: Text("upload image", style: TextStyle(fontSize: 10))),
                           Text("Nome"),
                           Container(
                             height: 30,
@@ -487,7 +542,7 @@ class _HomeState extends State<Home> {
                             'bairro':bairroController.text,
                             'localidade':localidadeController.text,
                             'CEP': CEPController.text,
-                            'aniversario': aniversarioController.text
+                            'aniversario': aniversarioController.text,
                             });
                           Navigator.of(context).pop();
                           _limparControllers();
@@ -504,5 +559,5 @@ class _HomeState extends State<Home> {
         child: Icon(Icons.add),
       ),
     );
-  } // build
+  }
 }
